@@ -15,24 +15,28 @@ on:
     paths:
       - "template_config.yml"
 
+env:
+  UV_SYSTEM_PYTHON: "1"
+
 jobs:
   update_backport_labels:
     runs-on: "ubuntu-latest"
     steps:
       - uses: "actions/setup-python@v6"
         with:
-          python-version: "3.11"
+          python-version: "3.12"
+      - name: "Install uv"
+        uses: "astral-sh/setup-uv@v7"
+        with:
+          enable-cache: true
       - name: "Configure Git with pulpbot name and email"
         run: |
           git config --global user.name 'pulpbot'
           git config --global user.email 'pulp-infra@redhat.com'
-      - name: "Install python dependencies"
-        run: |
-          pip install requests pyyaml
       - uses: "actions/checkout@v6"
       - name: "Update labels"
         run: |
-          python3 .github/workflows/scripts/update_backport_labels.py
+          uv run --script .github/workflows/scripts/update_backport_labels.py
         env:
           GITHUB_TOKEN: "${{ secrets.RELEASE_TOKEN }}"
 ...
